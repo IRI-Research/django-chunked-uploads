@@ -1,10 +1,11 @@
 from django.conf.urls.defaults import *
 
-from chunked_uploads.views import UploadView, complete_upload
+from chunked_uploads.views import UploadView, complete_upload, upload_template
 
 
 urlpatterns = patterns("",
-    url(r"^upload/done/(?P<uuid>[0-9a-f]+)/$", complete_upload, name="uploads_done"),
-    url(r"^upload/$", UploadView.as_view(), name="uploads"),
-    url(r"^(?P<pk>\d+)/delete/$", UploadView.as_view(), name="uploads_delete"),
+    url(r"^upload/done/(?P<uuid>[-0-9a-f]{36})/$", complete_upload, name="upload_done"),
+    url(r"^upload/$", UploadView.as_view(), name="upload"),
+    url(r"^(?P<pk>\d+)/delete/$", UploadView.as_view(), name="upload_delete"),
+    url(r"upload_template/$", upload_template),
 )
