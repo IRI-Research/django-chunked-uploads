@@ -10,7 +10,9 @@ from django.db import models
 
 from django.contrib.auth.models import User
 
-from uuidfield import UUIDField
+from django_extensions.db.fields import UUIDField
+
+import logging
 
 
 STORAGE_CLASS = getattr(settings, "CHUNKED_UPLOADS_STORAGE_CLASS", None)
@@ -96,8 +98,10 @@ class Upload(models.Model):
             bytes = chunk.chunk.read()
             m.update(bytes)
             fp.write(bytes)
+            chunk.chunk.close()
         fp.close()
-        f = File(open(fname, "rb"))
+        temp_file = open(fname, "rb")
+        f = File(temp_file)
         self.upload.save(
             name=fname.replace(".tmp", ""),
             content=UploadedFile(
@@ -106,11 +110,32 @@ class Upload(models.Model):
                 size=f.size
             )
         )
+        temp_file.close()
         self.md5 = m.hexdigest()
         self.state = Upload.STATE_STITCHED
         self.save()
         os.remove(fname)
-    
+        
+    def delete(self):
+        #get upload path
+        upload_path = os.path.join(settings.MEDIA_ROOT, storage_path(self, self.filename))
+        self.remove_related_chunks()
+        #remove upload from bdd
+        super(Upload, self).delete()
+        #try to delete the upload if exists
+        if os.path.exists(upload_path):
+            os.remove(upload_path)
+        
+        #delete the upload dir if empty
+        if os.path.exists(os.path.dirname(upload_path)):
+            if not os.listdir(os.path.dirname(upload_path)):
+                os.rmdir(os.path.dirname(upload_path))
+                
+    def remove_related_chunks(self):
+        logging.debug("remove_related_chunks")
+        for chunk in self.chunks.all().order_by("pk"):
+            chunk.delete()
+                
     def uploaded_size(self):
         return self.chunks.all().aggregate(
             models.Sum("chunk_size")
@@ -129,3 +154,16 @@ class Chunk(models.Model):
             self.pk, self.chunk_size, self.upload.pk, self.upload.uuid
         )
 
+    def delete(self):
+        #get chunk path
+        chunk_path = os.path.join(settings.MEDIA_ROOT, str(self.chunk))
+        #deletion of chunk in bdd
+        super(Chunk, self).delete()
+        #deletion of chunk file
+        if os.path.exists(chunk_path):
+            os.remove(chunk_path)
+        
+        #delete the chunk dir if empty
+        if os.path.exists(os.path.dirname(chunk_path)):
+            if not os.listdir(os.path.dirname(chunk_path)):
+                os.rmdir(os.path.dirname(chunk_path))
