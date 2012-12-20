@@ -1,0 +1,46 @@
+
+.fileinput-button {
+}
+
+.fileinput-button input {
+  opacity: 1;
+  filter: alpha(opacity=0);
+}
+
+.bar {
+background-color: #FFFFFF;
+	height: 12px;
+	padding: 3px;
+	width: 250px;		
+	border-radius: 45px;
+	box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;	         
+	}
+
+.bar span {
+	display: inline-block;
+	height: 100%;	
+	border-radius: 45px;
+    -webkit-transition: width .4s ease-in-out;  
+}
+
+.grey span {
+	background-color: #838383;   
+}
+
+.stripes span {
+	-webkit-background-size: 30px 30px;
+	background-size: 30px 30px;			
+	background-image: -webkit-linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
+						transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+						transparent 75%, transparent);     
+	
+	-webkit-animation: animate-stripes 3s linear infinite;     		
+}
+
+@-webkit-keyframes animate-stripes { 
+	0% {background-position: 0 0;} 100% {background-position: 60px 0;}
+}
+
+@-moz-keyframes animate-stripes {
+	0% {background-position: 0 0;} 100% {background-position: 60px 0;}
+}
