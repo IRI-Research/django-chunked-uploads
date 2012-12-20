@@ -3,10 +3,11 @@ import json
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render_to_response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
+from django.template import RequestContext
 
 from django.contrib.auth.decorators import login_required
 
@@ -21,6 +22,10 @@ class LoginRequiredView(View):
         return super(LoginRequiredView, self).dispatch(request, *args, **kwargs)
 
 
+def upload_template(request):
+    return render_to_response ('chunked_uploads.html', context_instance=RequestContext(request))
+
+
 @csrf_exempt
 def complete_upload(request, uuid):
     up = get_object_or_404(Upload, uuid=uuid)
@@ -29,8 +34,16 @@ def complete_upload(request, uuid):
     else:
         up.state = Upload.STATE_UPLOAD_ERROR
     up.save()
+        
     if "upload-uuid" in request.session:
         del request.session["upload-uuid"]
+        
+    if up.state == Upload.STATE_COMPLETE:
+        up.stitch_chunks()
+        
+    if up.state == Upload.STATE_STITCHED:
+        up.remove_related_chunks()
+            
     return HttpResponse()
 
 
@@ -44,14 +57,13 @@ class UploadView(LoginRequiredView):
             "progress": "",
             "thumbnail_url": "",
             "url": upload.chunks.all()[0].chunk.url,  # @@@ this is wrong
-            "delete_url": reverse("uploads_delete", kwargs={"pk": upload.pk}),
+            "delete_url": reverse("upload_delete", kwargs={"pk": upload.pk}),
             "delete_type": "DELETE",
             "upload_uuid": str(upload.uuid)
         }
     
     def handle_chunk(self):
         f = ContentFile(self.request.raw_post_data)
-        
         if "upload-uuid" in self.request.session:
             try:
                 u = Upload.objects.get(uuid=self.request.session["upload-uuid"])
@@ -61,10 +73,12 @@ class UploadView(LoginRequiredView):
                 del self.request.session["upload-uuid"]
         
         if "upload-uuid" not in self.request.session:
+            content_disposition = self.request.META["HTTP_CONTENT_DISPOSITION"]
+            content_range = self.request.META["HTTP_CONTENT_RANGE"]
             u = Upload.objects.create(
                 user=self.request.user,
-                filename=self.request.META["HTTP_X_FILE_NAME"],
-                filesize=self.request.META["HTTP_X_FILE_SIZE"]
+                filename=content_disposition.split("=")[1].split('"')[1],
+                filesize=content_range.split("/")[1]
             )
             self.request.session["upload-uuid"] = str(u.uuid)
         
@@ -78,34 +92,25 @@ class UploadView(LoginRequiredView):
         
         return HttpResponse(json.dumps(data), mimetype="application/json")
     
-    def handle_whole(self):
-        f = self.request.FILES.get("file")
-        u = Upload.objects.create(
-            user=self.request.user,
-            filename=f.name,
-            filesize=f.size
-        )
-        Chunk.objects.create(
-            upload=u,
-            chunk=f
-        )
-        u.state = Upload.STATE_COMPLETE
-        u.save()
-        u.stitch_chunks()
-        data = []
-        data.append(self._add_status_response(u))
+    def get(self, request, *args, **kwargs):
+        data=[]
+        if "upload-uuid" in self.request.session:
+            try:
+                u = Upload.objects.get(uuid=self.request.session["upload-uuid"])
+                data.append(self._add_status_response(u))
+            except Upload.DoesNotExist:
+                del self.request.session["upload-uuid"]
         return HttpResponse(json.dumps(data), mimetype="application/json")
     
-    def get(self, request, *args, **kwargs):
-        return HttpResponse(json.dumps([{}]))
-    
     def post(self, request, *args, **kwargs):
-        if request.META.get("HTTP_X_FILE_NAME"):
-            return self.handle_chunk()
-        else:
-            return self.handle_whole()
+        return self.handle_chunk()
+    
+    def abort (self, request, *args, **kwargs):
+        pass
     
     def delete(self, request, *args, **kwargs):
         upload = get_object_or_404(Upload, pk=kwargs.get("pk"))
-        upload.delete()  # Make sure this cascade deletes it's chunks
+        upload.delete()
+        if "upload-uuid" in self.request.session:
+            del request.session["upload-uuid"]
         return HttpResponse(json.dumps({}), mimetype="application/json")
