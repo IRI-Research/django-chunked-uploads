@@ -9,11 +9,13 @@
 
 <script type="text/javascript" charset="utf-8">
 	chunked_uploads_endpoints = {
+			jqXHR : null,
 			base_url: '{{WEB_URL}}',
 			upload_url: '{{WEB_URL}}{% url upload %}',
 			done_url: '{{WEB_URL}}{% url upload_done uuid='00000000-0000-0000-0000-000000000000' %}',
 			file_type: '{{ file_type }}',
     };	
+    
 </script>
 
 <body>

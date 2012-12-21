@@ -2,7 +2,6 @@ $(function () {
 	'use strict';
 	var is_canceled=false;
 	var is_paused=false;
-	var jqXHR = null;
 	var data_resume = null;
 	$('#start_upload').attr('disabled', true);
 	$('#pause_upload').attr('disabled', true);
@@ -22,19 +21,19 @@ $(function () {
 	    	
 	    	$('#start_upload').one('click', function (e) {
 	            e.preventDefault();
-	            jqXHR = data.submit();
+	            chunked_uploads_endpoints.jqXHR = data.submit();
 	        });
 	    },
 	    done: function (e, data) {
+	    	console.log("done");
 	    	chunked_uploads_endpoints.done_url = chunked_uploads_endpoints.done_url.replace('00000000-0000-0000-0000-000000000000', data.result[0].upload_uuid);
 	    	$.get(chunked_uploads_endpoints.done_url, "json");
-	        $.each(data.result, function (index, file) {
-                $('<p/>').text(file.name).appendTo(document.body);
-            });
+	    	console.log(data.result);
 	        $('#start_upload').hide();
     		$('#pause_upload').hide();
     		$('#resume_upload').hide();
     		$('#cancel_upload').hide();
+    		
 	    },
 	    progressall: function (e, data) {
 	    	var progress = parseInt(data.loaded / data.total * 100, 10);
@@ -57,7 +56,7 @@ $(function () {
     $('#cancel_upload').click(function (e) {
 		if (!is_paused){
 			is_canceled = true;
-			jqXHR.abort();
+			chunked_uploads_endpoints.jqXHR.abort();
 	    	$('#pause_upload').attr('disabled', true);
 			$('#resume_upload').attr('disabled', true);
 			setTimeout(function() {
@@ -81,7 +80,7 @@ $(function () {
 	
 	$('#pause_upload').click(function (e) {
 		is_paused = true;
-		jqXHR.abort();
+		chunked_uploads_endpoints.jqXHR.abort();
 		$('#pause_upload').attr('disabled', true);
 		$('#resume_upload').attr('disabled', false);
 	});
@@ -90,7 +89,7 @@ $(function () {
 		is_paused = false;
         $.getJSON(chunked_uploads_endpoints.upload_url, function (current_upload) {
         	data_resume.uploadedBytes = current_upload[0].size;
-        	jqXHR = data_resume.submit();
+        	chunked_uploads_endpoints.jqXHR = data_resume.submit();
         });
 		$('#resume_upload').attr('disabled', true);
 		$('#pause_upload').attr('disabled', false);

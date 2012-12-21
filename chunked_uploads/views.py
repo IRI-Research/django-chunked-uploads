@@ -44,8 +44,10 @@ def complete_upload(request, uuid):
         
     if up.state == Upload.STATE_STITCHED:
         up.remove_related_chunks()
-            
-    return HttpResponse()
+    
+    data = []
+    data.append(up.upload.url)
+    return HttpResponse(json.dumps(data), mimetype="application/json")
 
 
 class UploadView(LoginRequiredView):
@@ -57,7 +59,7 @@ class UploadView(LoginRequiredView):
             "size": upload.uploaded_size(),
             "progress": "",
             "thumbnail_url": "",
-            "url": upload.chunks.all()[0].chunk.url,  # @@@ this is wrong
+            "url": upload.chunks.all()[0].chunk.url,
             "delete_url": absurl_norequest("upload_delete", kwargs={"pk": upload.pk}),
             "delete_type": "DELETE",
             "upload_uuid": str(upload.uuid)
