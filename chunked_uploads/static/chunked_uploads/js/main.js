@@ -62,9 +62,9 @@ $(function () {
 			$('#resume_upload').attr('disabled', true);
 			setTimeout(function() {
 				$.getJSON(chunked_uploads_endpoints.upload_url, function(current_upload) {	
-	    			$.ajax({
+					$.ajax({
 	    	    		type: current_upload[0].delete_type,
-	    	    		url: "http://localhost/" + current_upload[0].delete_url
+	    	    		url: current_upload[0].delete_url
 	    		    });
 	        	});
 			},1000);
@@ -73,7 +73,7 @@ $(function () {
 			$.getJSON(chunked_uploads_endpoints.upload_url, function(current_upload) {	
     			$.ajax({
     	    		type: current_upload[0].delete_type,
-    	    		url: "http://localhost/" + current_upload[0].delete_url
+    	    		url: current_upload[0].delete_url
     		    });
         	});
 		}

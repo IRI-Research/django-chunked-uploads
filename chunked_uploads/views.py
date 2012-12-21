@@ -12,6 +12,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 
 from chunked_uploads.models import Upload, Chunk
+from chunked_uploads.utils.url import absurl_norequest
 
 
 class LoginRequiredView(View):
@@ -57,7 +58,7 @@ class UploadView(LoginRequiredView):
             "progress": "",
             "thumbnail_url": "",
             "url": upload.chunks.all()[0].chunk.url,  # @@@ this is wrong
-            "delete_url": reverse("upload_delete", kwargs={"pk": upload.pk}),
+            "delete_url": absurl_norequest("upload_delete", kwargs={"pk": upload.pk}),
             "delete_type": "DELETE",
             "upload_uuid": str(upload.uuid)
         }
