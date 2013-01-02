@@ -12,7 +12,7 @@ from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
 
 from chunked_uploads.models import Upload, Chunk
-from chunked_uploads.utils.url import absurl_norequest
+from chunked_uploads.utils.url import absurl_norequest, get_web_url
 
 
 class LoginRequiredView(View):
@@ -46,7 +46,7 @@ def complete_upload(request, uuid):
         up.remove_related_chunks()
     
     data = []
-    data.append(up.upload.url)
+    data.append({"video_url": get_web_url() + up.upload.url})
     return HttpResponse(json.dumps(data), mimetype="application/json")
 
 

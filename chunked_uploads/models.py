@@ -12,8 +12,6 @@ from django.contrib.auth.models import User
 
 from django_extensions.db.fields import UUIDField
 
-import logging
-
 
 STORAGE_CLASS = getattr(settings, "CHUNKED_UPLOADS_STORAGE_CLASS", None)
 if STORAGE_CLASS:
@@ -72,7 +70,7 @@ class Upload(models.Model):
     uuid = UUIDField(auto=True, unique=True)
     filename = models.CharField(max_length=250)
     filesize = models.IntegerField()
-    upload = models.FileField(max_length=250, storage=storage, upload_to=storage_path)
+    upload = models.FileField(max_length=250, upload_to=storage_path)
     md5 = models.CharField(max_length=32, blank=True)
     state = models.IntegerField(choices=STATE_CHOICES, default=STATE_UPLOADING)
     created_at = models.DateTimeField(default=datetime.datetime.now)
@@ -103,10 +101,10 @@ class Upload(models.Model):
         temp_file = open(fname, "rb")
         f = File(temp_file)
         self.upload.save(
-            name=fname.replace(".tmp", ""),
+            name=self.filename,
             content=UploadedFile(
                 file=f,
-                name=fname.replace(".tmp", ""),
+                name=self.filename,
                 size=f.size
             )
         )
@@ -132,7 +130,6 @@ class Upload(models.Model):
                 os.rmdir(os.path.dirname(upload_path))
                 
     def remove_related_chunks(self):
-        logging.debug("remove_related_chunks")
         for chunk in self.chunks.all().order_by("pk"):
             chunk.delete()
                 
