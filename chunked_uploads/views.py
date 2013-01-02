@@ -46,7 +46,10 @@ def complete_upload(request, uuid):
         up.remove_related_chunks()
     
     data = []
-    data.append({"video_url": get_web_url() + up.upload.url})
+    data.append({
+        "video_url": get_web_url() + up.upload.url, 
+        "state": up.state
+    })
     return HttpResponse(json.dumps(data), mimetype="application/json")
 
 

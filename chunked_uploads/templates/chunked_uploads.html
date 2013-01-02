@@ -14,16 +14,19 @@
 			upload_url: '{{WEB_URL}}{% url upload %}',
 			done_url: '{{WEB_URL}}{% url upload_done uuid='00000000-0000-0000-0000-000000000000' %}',
 			file_type: '{{ file_type }}',
-    };    
+    };
+    
+    function file_name(element) {
+    	$(element).hide();
+    	$("#file_part").append(element.value);
+    };
 </script>
 
 <body>
 
-	<span class="fileinput-button">
-		<input type="file" id="fileupload" name="files[]"/>
-		<!-- onchange="getElementById('filefield').value = getElementById('fileupload').value;" -->
+	<span id="file_part" class="fileinput-button">
+		<input type="file" id="fileupload" name="files[]" onchange="file_name(this)"/>
 	</span>
-	<!-- <input type="text" id="filefield" /></div> -->
 	</br>
 	<button id="start_upload" class="action_upload" type="button">
 		<span>Start</span>

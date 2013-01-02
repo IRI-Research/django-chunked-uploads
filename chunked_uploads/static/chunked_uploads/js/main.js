@@ -28,8 +28,6 @@ $(function () {
 	    	chunked_uploads_endpoints.done_url = chunked_uploads_endpoints.done_url.replace('00000000-0000-0000-0000-000000000000', data.result[0].upload_uuid);
 	    	$.getJSON(chunked_uploads_endpoints.done_url, function(upload) {
 	    		if (typeof chunked_uploads_video_url === "function") {
-	    			console.log("done");
-	    			console.log(upload[0].video_url);
 	    			chunked_uploads_video_url(upload[0].video_url);
 	    		}
 	    	});
