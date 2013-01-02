@@ -22,7 +22,7 @@ class LoginRequiredView(View):
     def dispatch(self, request, *args, **kwargs):
         return super(LoginRequiredView, self).dispatch(request, *args, **kwargs)
 
-
+@login_required
 def upload_template(request):
     return render_to_response ('chunked_uploads.html', context_instance=RequestContext(request))
 
