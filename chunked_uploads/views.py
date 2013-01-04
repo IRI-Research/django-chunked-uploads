@@ -24,7 +24,7 @@ class LoginRequiredView(View):
 
 @login_required
 def upload_template(request):
-    return render_to_response ('chunked_uploads.html', context_instance=RequestContext(request))
+    return render_to_response ('demo.html', context_instance=RequestContext(request))
 
 
 @csrf_exempt

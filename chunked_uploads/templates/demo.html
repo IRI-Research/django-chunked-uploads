@@ -1,0 +1,82 @@
+<!-- {% load absstatic %} -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Upload</title>
+</head>
+
+<link rel="stylesheet" href="{{ STATIC_URL }}chunked_uploads/css/chunked_uploads.css" type="text/css"/>
+
+<script type="text/javascript" charset="utf-8">
+	chunked_uploads_endpoints = {
+			jqXHR : null,
+			base_url: '{{WEB_URL}}',
+			upload_url: '{{WEB_URL}}{% url upload %}',
+			done_url: '{{WEB_URL}}{% url upload_done uuid='00000000-0000-0000-0000-000000000000' %}',
+			file_type: '{{ file_type }}',
+    };
+    
+    function file_name(element) {
+    	$(element).hide();
+    	$("#file_part").append(element.value);
+    };
+    
+    $(function() {
+		//callback of chunked upload start
+		chunked_upload_start = function(){
+		};
+		
+		//callback of chunked upload stop
+		chunked_upload_stop = function(){
+		};
+		
+		//callback of chunked upload error
+		chunked_upload_error = function(){
+		};
+		
+		//callback of chunked upload complete
+		chunked_upload_complete = function(){
+		};
+		
+    	//gets video_url and returns it to the "scr" field
+    	chunked_uploads_video_url = function(video_url) {
+    		$('#id_content-media_input_type').val("create");
+    		$('#id_media-src').val(video_url);
+    		$('#id_media-src').attr('disabled', true);
+    		$(".media_fields").hide();
+       		$("#media_field_create").show();
+    		$('#upload_url').append(video_url);
+	    };
+    });
+</script>
+
+<body>
+
+	<span id="file_part" class="fileinput-button">
+		<input type="file" id="fileupload" name="files[]" onchange="file_name(this)"/>
+	</span>
+	</br>
+	<button id="start_upload" class="action_upload" type="button">
+		<span>Start</span>
+	</button>
+	<button id="resume_upload" class="action_upload" type="button">
+		<span>Resume</span>
+	</button>
+	<button id="pause_upload" class="action_upload" type="button">
+		<span>Pause</span>
+	</button>
+	<button id="cancel_upload" class="action_upload" type="button">
+		<span>Cancel</span>
+	</button>
+	<div class="bar grey stripes">
+		<span class="progress" style="width: 0%"></span>
+	</div>
+
+<script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.iframe-transport.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.fileupload.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/main.js"></script>
+
+</body>
+</html>
