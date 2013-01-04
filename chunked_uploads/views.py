@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
@@ -13,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 
 from chunked_uploads.models import Upload, Chunk
 from chunked_uploads.utils.url import absurl_norequest, get_web_url
-
+from chunked_uploads.utils.path import sanitize_filename
 
 class LoginRequiredView(View):
     
@@ -80,10 +81,11 @@ class UploadView(LoginRequiredView):
         
         if "upload-uuid" not in self.request.session:
             content_disposition = self.request.META["HTTP_CONTENT_DISPOSITION"]
+            logging.debug(sanitize_filename(unicode(content_disposition.split("=")[1].split('"')[1])))
             content_range = self.request.META["HTTP_CONTENT_RANGE"]
             u = Upload.objects.create(
                 user=self.request.user,
-                filename=content_disposition.split("=")[1].split('"')[1],
+                filename=sanitize_filename(unicode(content_disposition.split("=")[1].split('"')[1])),
                 filesize=content_range.split("/")[1]
             )
             self.request.session["upload-uuid"] = str(u.uuid)
