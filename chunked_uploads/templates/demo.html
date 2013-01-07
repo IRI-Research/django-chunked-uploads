@@ -5,6 +5,7 @@
 <title>Upload</title>
 </head>
 
+<script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.min.js"></script>
 <link rel="stylesheet" href="{{ STATIC_URL }}chunked_uploads/css/chunked_uploads.css" type="text/css"/>
 
 <script type="text/javascript" charset="utf-8">
@@ -40,12 +41,7 @@
 		
     	//gets video_url and returns it to the "scr" field
     	chunked_uploads_video_url = function(video_url) {
-    		$('#id_content-media_input_type').val("create");
-    		$('#id_media-src').val(video_url);
-    		$('#id_media-src').attr('disabled', true);
-    		$(".media_fields").hide();
-       		$("#media_field_create").show();
-    		$('#upload_url').append(video_url);
+    		$('#upload_url').val(video_url);
 	    };
     });
 </script>
@@ -71,8 +67,8 @@
 	<div class="bar grey stripes">
 		<span class="progress" style="width: 0%"></span>
 	</div>
-
-<script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.min.js"></script>
+	<input type="text" id="upload_url" style="width: 255;" readonly/>
+	
 <script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.ui.widget.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.iframe-transport.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}chunked_uploads/js/jquery.fileupload.js"></script>
