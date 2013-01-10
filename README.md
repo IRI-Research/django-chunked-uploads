@@ -2,22 +2,41 @@
 
 This is an app for your Django project to enable large uploads using the Blob API to chunk the files client side and send chunks that are re-assembled server side.
 
-Features
-========
+## Features
 
 * Chunked upload
 * Pause/resume upload
 * Cancel upload (from database and disk)
 * Progress
-* CrossDomain (thanks to Jquery file upload)
-* No flash used (thanks to Jquery file upload)
+* CrossDomain
+* No flash used
 
-Requirements
-============
+## Install
 
-* Django
-* Jquery 1.8.3 or later
-* That's all ! 
+### Server Side
+
+**On your django server install**
+
+* [httplib2](http://code.google.com/p/httplib2/)
+* [django-extentions](http://packages.python.org/django-extensions/)
+
+**Donwload django-chunked-uploads**
+
+* repo [github](https://github.com/IRI-Research/django-chunked-uploads)
+
+or
+
+* install by pip
+
+        pip install django-chunked-uploads
+        
+**Configuration**
+
+* add 'chunked_uploads' to you 'INSTALLED_APPS'
+* in your settings, define 'CHUNKED_UPLOADS_STORAGE_PATH' and 'CHUNKED_UPLOADS_CHUNKS_STORAGE_PATH' (if not defined, default media_root is used)
+
+### Client Side
+
 
 Credits
 ========
