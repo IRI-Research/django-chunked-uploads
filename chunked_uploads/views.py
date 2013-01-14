@@ -3,7 +3,6 @@ import logging
 
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from chunked_uploads.models import Upload, Chunk
 from chunked_uploads.utils.url import absurl_norequest, get_web_url
 from chunked_uploads.utils.path import sanitize_filename
+from chunked_uploads.utils.cross_domain import allow_cross_domain_response as HttpResponse_cross_domain
 
 class LoginRequiredView(View):
     
@@ -51,7 +51,7 @@ def complete_upload(request, uuid):
         "video_url": get_web_url() + up.upload.url, 
         "state": up.state
     })
-    return HttpResponse(json.dumps(data), mimetype="application/json")
+    return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
 
 
 class UploadView(LoginRequiredView):
@@ -81,12 +81,15 @@ class UploadView(LoginRequiredView):
         
         if "upload-uuid" not in self.request.session:
             content_disposition = self.request.META["HTTP_CONTENT_DISPOSITION"]
-            logging.debug(sanitize_filename(unicode(content_disposition.split("=")[1].split('"')[1])))
-            content_range = self.request.META["HTTP_CONTENT_RANGE"]
+            if "HTTP_CONTENT_RANGE" in self.request:
+                content_range = self.request.META["HTTP_CONTENT_RANGE"]
+                content_range  = content_range.split("/")[1]
+            else:
+                content_range = self.request.META["CONTENT_LENGTH"]
             u = Upload.objects.create(
                 user=self.request.user,
                 filename=sanitize_filename(unicode(content_disposition.split("=")[1].split('"')[1])),
-                filesize=content_range.split("/")[1]
+                filesize=content_range
             )
             self.request.session["upload-uuid"] = str(u.uuid)
         
@@ -98,7 +101,7 @@ class UploadView(LoginRequiredView):
         data = []
         data.append(self._add_status_response(u))
         
-        return HttpResponse(json.dumps(data), mimetype="application/json")
+        return data
     
     def get(self, request, *args, **kwargs):
         data=[]
@@ -108,17 +111,19 @@ class UploadView(LoginRequiredView):
                 data.append(self._add_status_response(u))
             except Upload.DoesNotExist:
                 del self.request.session["upload-uuid"]
-        return HttpResponse(json.dumps(data), mimetype="application/json")
+        return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
     
     def post(self, request, *args, **kwargs):
-        return self.handle_chunk()
+        data = self.handle_chunk()
+        return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
     
-    def abort (self, request, *args, **kwargs):
-        pass
+    def options(self, request, *args, **kwargs):
+        return HttpResponse_cross_domain({}, mimetype="application/json")
     
     def delete(self, request, *args, **kwargs):
         upload = get_object_or_404(Upload, pk=kwargs.get("pk"))
         upload.delete()
         if "upload-uuid" in self.request.session:
             del request.session["upload-uuid"]
-        return HttpResponse(json.dumps({}), mimetype="application/json")
+        
+        return HttpResponse_cross_domain({}, mimetype="application/json")
