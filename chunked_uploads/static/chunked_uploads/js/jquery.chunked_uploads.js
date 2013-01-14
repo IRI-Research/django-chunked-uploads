@@ -11,11 +11,9 @@ $(function () {
 	$('#fileupload').fileupload({        
         url: chunked_uploads_endpoints.upload_url,
 	   	dataType: 'json',
-	   	acceptFileTypes: /(\.|\/)(avi|mpe?g|wmv)$/i,
 	   	maxChunkSize: 1048576,
 	   	maxNumberOfFiles: 1,
 	    multipart: false,
-	    autoUpload: false,
 	    xhrFields: {
 	        withCredentials: true
 	    },
@@ -68,21 +66,31 @@ $(function () {
 	    	$('#pause_upload').attr('disabled', true);
 			$('#resume_upload').attr('disabled', true);
 			setTimeout(function() {
-				$.getJSON(chunked_uploads_endpoints.upload_url, function(current_upload) {	
-					$.ajax({
-	    	    		type: current_upload[0].delete_type,
-	    	    		url: current_upload[0].delete_url
-	    		    });
-	        	});
+				$.ajax({
+					  dataType: "json",
+					  url: chunked_uploads_endpoints.upload_url,
+					  xhrFields: {withCredentials: true},
+					  success: function(current_upload){
+						  $.ajax({
+			    	    		type: current_upload[0].delete_type,
+			    	    		url: current_upload[0].delete_url
+			    		  });
+					  }
+				});
 			},1000);
 		}
 		else{
-			$.getJSON(chunked_uploads_endpoints.upload_url, function(current_upload) {	
-    			$.ajax({
-    	    		type: current_upload[0].delete_type,
-    	    		url: current_upload[0].delete_url
-    		    });
-        	});
+			$.ajax({
+				  dataType: "json",
+				  url: chunked_uploads_endpoints.upload_url,
+				  xhrFields: {withCredentials: true},
+				  success: function(current_upload){
+					  $.ajax({
+		    	    		type: current_upload[0].delete_type,
+		    	    		url: current_upload[0].delete_url
+		    		  });
+				  }
+			});
 		}
 	});
 	
@@ -95,20 +103,16 @@ $(function () {
 	
 	$('#resume_upload').click(function (e) {
 		is_paused = false;
-        $.getJSON(chunked_uploads_endpoints.upload_url, function (current_upload) {
-        	data_resume.uploadedBytes = current_upload[0].size;
-        	chunked_uploads_endpoints.jqXHR = data_resume.submit();
-        });
+		$.ajax({
+			  dataType: "json",
+			  url: chunked_uploads_endpoints.upload_url,
+			  xhrFields: {withCredentials: true},
+			  success: function(current_upload){
+				  data_resume.uploadedBytes = current_upload[0].size;
+				  chunked_uploads_endpoints.jqXHR = data_resume.submit();
+			  }
+		});
 		$('#resume_upload').attr('disabled', true);
 		$('#pause_upload').attr('disabled', false);
-	});
-	
-	$('#clean_upload').click(function (e) {
-		$.getJSON(chunked_uploads_endpoints.upload_url, function(current_upload) {	
-			$.ajax({
-	    		type: current_upload[0].delete_type,
-	    		url: current_upload[0].delete_url
-		    });
-    	});
 	});
 });
