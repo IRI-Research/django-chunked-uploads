@@ -1,14 +1,11 @@
 """
 Some small file related utilities
 """
-
-import string
-import unicodedata
-
-validFilenameChars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+import os
+from django.template.defaultfilters import slugify
 
 
-def sanitize_filename(filename):
-    cleanedFilename = unicodedata.normalize('NFKD', filename).encode('ASCII', 'ignore').lower()
-    return ''.join(c for c in cleanedFilename if c in validFilenameChars).replace(' ', '_')
-    
+def sanitize_filename(uncleaned_filename):
+    fileName, fileExtension = os.path.splitext(uncleaned_filename)
+    cleanedFilename = slugify(fileName)
+    return (cleanedFilename + fileExtension).replace('-', '_')
