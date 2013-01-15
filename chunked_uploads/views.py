@@ -80,10 +80,10 @@ class UploadView(LoginRequiredView):
         
         if "upload-uuid" not in self.request.session:
             content_disposition = self.request.META["HTTP_CONTENT_DISPOSITION"]
-            if self.request.META["HTTP_CONTENT_RANGE"]!=None:
+            try:
                 content_range = self.request.META["HTTP_CONTENT_RANGE"]
                 content_range  = content_range.split("/")[1]
-            else:
+            except:
                 content_range = self.request.META["CONTENT_LENGTH"]
             u = Upload.objects.create(
                 user=self.request.user,
