@@ -1,5 +1,4 @@
 import json
-import logging
 
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
@@ -81,7 +80,7 @@ class UploadView(LoginRequiredView):
         
         if "upload-uuid" not in self.request.session:
             content_disposition = self.request.META["HTTP_CONTENT_DISPOSITION"]
-            if "HTTP_CONTENT_RANGE" in self.request:
+            if self.request.META["HTTP_CONTENT_RANGE"]!=None:
                 content_range = self.request.META["HTTP_CONTENT_RANGE"]
                 content_range  = content_range.split("/")[1]
             else:
