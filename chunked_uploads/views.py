@@ -1,4 +1,6 @@
 import json
+import logging
+import urllib2
 
 from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
@@ -7,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 from django.template import RequestContext
+from django.http import HttpResponse
 
 from django.contrib.auth.decorators import login_required
 
@@ -14,6 +17,8 @@ from chunked_uploads.models import Upload, Chunk
 from chunked_uploads.utils.url import absurl_norequest, get_web_url
 from chunked_uploads.utils.path import sanitize_filename
 from chunked_uploads.utils.cross_domain import allow_cross_domain_response as HttpResponse_cross_domain
+from chunked_uploads.utils.build_auth_request import build_request
+from chunked_uploads.utils.decorators import oauth_required
 
 class LoginRequiredView(View):
     
@@ -29,28 +34,31 @@ def upload_template(request):
 
 @csrf_exempt
 def complete_upload(request, uuid):
-    up = get_object_or_404(Upload, uuid=uuid)
-    if up.filesize == up.uploaded_size():
-        up.state = Upload.STATE_COMPLETE
+    if request.method == "POST":
+        data = []
+        up = get_object_or_404(Upload, uuid=uuid)
+        if up.filesize == up.uploaded_size():
+            up.state = Upload.STATE_COMPLETE
+        else:
+            up.state = Upload.STATE_UPLOAD_ERROR
+        up.save()
+            
+        if "upload-uuid" in request.session:
+            del request.session["upload-uuid"]
+            
+        if up.state == Upload.STATE_COMPLETE:
+            up.stitch_chunks()
+            up.remove_related_chunks()
+            data.append({
+                         "video_url": get_web_url() + up.upload.url, 
+                         "state": Upload.STATE_CHOICES[up.state]
+                         })
+        else:
+            up.delete()
+            
+        return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
     else:
-        up.state = Upload.STATE_UPLOAD_ERROR
-    up.save()
-        
-    if "upload-uuid" in request.session:
-        del request.session["upload-uuid"]
-        
-    if up.state == Upload.STATE_COMPLETE:
-        up.stitch_chunks()
-        
-    if up.state == Upload.STATE_STITCHED:
-        up.remove_related_chunks()
-    
-    data = []
-    data.append({
-        "video_url": get_web_url() + up.upload.url, 
-        "state": up.state
-    })
-    return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
+        return HttpResponse_cross_domain({}, mimetype="application/json")
 
 
 class UploadView(LoginRequiredView):
@@ -69,6 +77,7 @@ class UploadView(LoginRequiredView):
         }
     
     def handle_chunk(self):
+        logging.debug("self.request.raw_post_data : " + str(self.request.raw_post_data))
         f = ContentFile(self.request.raw_post_data)
         if "upload-uuid" in self.request.session:
             try:
@@ -107,7 +116,11 @@ class UploadView(LoginRequiredView):
         if "upload-uuid" in self.request.session:
             try:
                 u = Upload.objects.get(uuid=self.request.session["upload-uuid"])
-                data.append(self._add_status_response(u))
+                # if the objet's got an upload error: delete
+                if u.state == Upload.STATE_UPLOAD_ERROR:
+                    u.delete()
+                else:
+                    data.append(self._add_status_response(u))
             except Upload.DoesNotExist:
                 del self.request.session["upload-uuid"]
         return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
@@ -122,6 +135,7 @@ class UploadView(LoginRequiredView):
     def delete(self, request, *args, **kwargs):
         upload = get_object_or_404(Upload, pk=kwargs.get("pk"))
         upload.delete()
+        #check if upload-uuid still in request, if it : delete
         if "upload-uuid" in self.request.session:
             del request.session["upload-uuid"]
         

@@ -28,14 +28,15 @@ $(function () {
 	    done: function (e, data) {
 	    	chunked_uploads_endpoints.done_url = chunked_uploads_endpoints.done_url.replace('00000000-0000-0000-0000-000000000000', data.result[0].upload_uuid);
 	    	$.ajax({
-				  dataType: "json",
-				  url: chunked_uploads_endpoints.done_url,
-				  xhrFields: {withCredentials: true},
-				  success: function(current_upload){
-					  if (typeof chunked_uploads_video_url === "function") {
-			    			chunked_uploads_video_url(current_upload[0].video_url);
-					  }
-				  }
+	    		type: "POST",
+	    		dataType: "json",
+	    		url: chunked_uploads_endpoints.done_url,
+	    		xhrFields: {withCredentials: true},
+	    		success: function(current_upload){
+	    			if (typeof chunked_uploads_video_url === "function") {
+	    				chunked_uploads_video_url(current_upload[0].video_url);
+	    			}
+	    		}
 			});
 	    	
 	        $('#start_upload').hide();
