@@ -2,6 +2,8 @@ import datetime
 import errno
 import hashlib
 import os
+import hmac
+import time
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -11,6 +13,13 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from django_extensions.db.fields import UUIDField
+
+try:
+    from hashlib import sha1
+except ImportError:
+    import sha
+    sha1 = sha.sha
+import logging
 
 
 STORAGE_CLASS = getattr(settings, "CHUNKED_UPLOADS_STORAGE_CLASS", None)
@@ -168,3 +177,53 @@ class Chunk(models.Model):
         if os.path.exists(os.path.dirname(chunk_path)):
             if not os.listdir(os.path.dirname(chunk_path)):
                 os.rmdir(os.path.dirname(chunk_path))
+                
+
+class ApiAccess(models.Model):
+    """A simple model for use with the ``CacheDBThrottle`` behaviors."""
+    identifier = models.CharField(max_length=255)
+    url = models.CharField(max_length=255, blank=True, default='')
+    request_method = models.CharField(max_length=10, blank=True, default='')
+    accessed = models.PositiveIntegerField()
+    
+    def __unicode__(self):
+        return u"%s @ %s" % (self.identifer, self.accessed)
+    
+    def save(self, *args, **kwargs):
+        self.accessed = int(time.time())
+        return super(ApiAccess, self).save(*args, **kwargs)
+
+
+if 'django.contrib.auth' in settings.INSTALLED_APPS:
+    import uuid
+    
+    class ApiKey(models.Model):
+        user = models.OneToOneField(User, related_name='chunked_upload_api_key')
+        key = models.CharField(max_length=256, blank=True, default='')
+        created = models.DateTimeField(default=datetime.datetime.now)
+        
+        def __unicode__(self):
+            return u"%s for %s" % (self.key, self.user)
+        
+        def save(self, *args, **kwargs):
+            if not self.key:
+                self.key = self.generate_key()
+            
+            return super(ApiKey, self).save(*args, **kwargs)
+        
+        def generate_key(self):
+            # Get a random UUID.
+            new_uuid = uuid.uuid4()
+            # Hmac that beast.
+            return hmac.new(str(new_uuid), digestmod=sha1).hexdigest()
+    
+    
+    def create_api_key(**kwargs):
+        """
+        A signal for hooking up automatic ``ApiKey`` creation.
+        """
+        logging.debug("kwargs : " + str(kwargs))
+        logging.debug("kwargs2 : " + str(kwargs.get('created')))
+        logging.debug("kwargs2 : " + str(kwargs.get('instance')))
+        if kwargs.get('created') is True:
+            ApiKey.objects.create(user=kwargs.get('instance'))

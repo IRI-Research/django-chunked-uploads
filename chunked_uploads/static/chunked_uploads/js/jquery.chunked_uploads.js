@@ -8,15 +8,22 @@ $(function () {
 	$('#resume_upload').attr('disabled', true);
 	$('#cancel_upload').attr('disabled', true);
 	
+	var authentication = {
+			username: chunked_uploads_endpoints.username,
+			api_key: chunked_uploads_endpoints.api_key
+	}
+	
 	$('#fileupload').fileupload({        
         url: chunked_uploads_endpoints.upload_url,
 	   	dataType: 'json',
 	   	maxChunkSize: 1048576,
+	    singleFileUploads: false,
 	   	maxNumberOfFiles: 1,
 	    multipart: false,
 	    xhrFields: {
 	        withCredentials: true
 	    },
+	    headers: authentication,
 	    add: function (e, data) {
 	    	$('#start_upload').attr('disabled', false);
 	    	

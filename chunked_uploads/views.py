@@ -1,5 +1,4 @@
 import json
-import logging
 import urllib2
 
 from django.core.files.base import ContentFile
@@ -19,13 +18,18 @@ from chunked_uploads.utils.path import sanitize_filename
 from chunked_uploads.utils.cross_domain import allow_cross_domain_response as HttpResponse_cross_domain
 from chunked_uploads.utils.build_auth_request import build_request
 from chunked_uploads.utils.decorators import oauth_required
+from chunked_uploads.authentication import ApiKeyAuthentication as Authentication
+from django.core.exceptions import PermissionDenied
 
 class LoginRequiredView(View):
     
     @method_decorator(csrf_exempt)
-    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        return super(LoginRequiredView, self).dispatch(request, *args, **kwargs)
+        auth= Authentication()
+        if auth.is_authenticated(request)==True:
+            return super(LoginRequiredView, self).dispatch(request, *args, **kwargs)
+        else:
+            return HttpResponse('Unauthorized', status=401)
 
 @login_required
 def upload_template(request):
@@ -77,7 +81,6 @@ class UploadView(LoginRequiredView):
         }
     
     def handle_chunk(self):
-        logging.debug("self.request.raw_post_data : " + str(self.request.raw_post_data))
         f = ContentFile(self.request.raw_post_data)
         if "upload-uuid" in self.request.session:
             try:
@@ -128,7 +131,7 @@ class UploadView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         data = self.handle_chunk()
         return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
-    
+        
     def options(self, request, *args, **kwargs):
         return HttpResponse_cross_domain({}, mimetype="application/json")
     
