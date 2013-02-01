@@ -37,6 +37,7 @@ $(function () {
 	    	$.ajax({
 	    		type: "POST",
 	    		dataType: "json",
+	    		headers: authentication,
 	    		url: chunked_uploads_endpoints.done_url,
 	    		xhrFields: {withCredentials: true},
 	    		success: function(current_upload){
@@ -83,11 +84,13 @@ $(function () {
 				$.ajax({
 					  dataType: "json",
 					  url: chunked_uploads_endpoints.upload_url,
+					  headers: authentication,
 					  xhrFields: {withCredentials: true},
 					  success: function(current_upload){
 						  $.ajax({
 			    	    		type: current_upload[0].delete_type,
-			    	    		url: current_upload[0].delete_url
+			    	    		url: current_upload[0].delete_url,
+			    	    		headers: authentication,
 			    		  });
 					  }
 				});
@@ -98,10 +101,12 @@ $(function () {
 				  dataType: "json",
 				  url: chunked_uploads_endpoints.upload_url,
 				  xhrFields: {withCredentials: true},
+				  headers: authentication,
 				  success: function(current_upload){
 					  $.ajax({
 		    	    		type: current_upload[0].delete_type,
-		    	    		url: current_upload[0].delete_url
+		    	    		url: current_upload[0].delete_url,
+		    	    		headers: authentication,
 		    		  });
 				  }
 			});
@@ -120,6 +125,7 @@ $(function () {
 		$.ajax({
 			  dataType: "json",
 			  url: chunked_uploads_endpoints.upload_url,
+			  headers: authentication,
 			  xhrFields: {withCredentials: true},
 			  success: function(current_upload){
 				  data_resume.uploadedBytes = current_upload[0].size;
@@ -137,6 +143,7 @@ $(function () {
     		$.ajax({
     			  dataType: "json",
     			  url: chunked_uploads_endpoints.upload_url,
+    			  headers: authentication,
     			  xhrFields: {withCredentials: true},
     			  success: function(current_upload){
     				  data_resume.uploadedBytes = current_upload[0].size;
