@@ -18,7 +18,7 @@ This is an app for your Django project to enable large uploads using the Blob AP
 **On your django server install**
 
 * [httplib2](http://code.google.com/p/httplib2/)
-* [django-extentions](http://packages.python.org/django-extensions/)
+* [django-extensions](http://packages.python.org/django-extensions/)
 
 **Donwload django-chunked-uploads**
 
