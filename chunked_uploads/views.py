@@ -40,25 +40,23 @@ def upload_template(request):
 def complete_upload(request, uuid):
     if request.method == "POST":
         data = []
-        up = get_object_or_404(Upload, uuid=uuid)
-        if up.filesize == up.uploaded_size():
-            up.state = Upload.STATE_COMPLETE
-        else:
-            up.state = Upload.STATE_UPLOAD_ERROR
-        up.save()
-            
         if "upload-uuid" in request.session:
             del request.session["upload-uuid"]
-            
-        if up.state == Upload.STATE_COMPLETE:
-            up.stitch_chunks()
-            up.remove_related_chunks()
-            data.append({
-                         "video_url": get_web_url() + up.upload.url, 
-                         "state": Upload.STATE_CHOICES[up.state]
-                         })
+        
+        up = get_object_or_404(Upload, uuid=uuid)
+        if up.filesize == up.uploaded_size():
+           up.stitch_chunks()
+           up.remove_related_chunks()
+           data.append({
+                        "video_url": get_web_url() + up.upload.url, 
+                        "state": "COMPLETE"
+                        })
         else:
             up.delete()
+            data.append({
+                        "video_url": "", 
+                        "state": "FAIL"
+                        })
             
         return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
     else:
@@ -70,10 +68,8 @@ class UploadView(LoginRequiredView):
     def _add_status_response(self, upload):
         return {
             "name": upload.filename,
-            "type": "",
             "size": upload.uploaded_size(),
-            "progress": "",
-            "thumbnail_url": "",
+            "total_size": upload.filesize,
             "url": upload.chunks.all()[0].chunk.url,
             "delete_url": absurl_norequest("upload_delete", kwargs={"pk": upload.pk}),
             "delete_type": "DELETE",
@@ -85,7 +81,7 @@ class UploadView(LoginRequiredView):
         if "upload-uuid" in self.request.session:
             try:
                 u = Upload.objects.get(uuid=self.request.session["upload-uuid"])
-                if u.state in [Upload.STATE_COMPLETE, Upload.STATE_UPLOAD_ERROR]:
+                if u.state==Upload.STATE_COMPLETE:
                     del self.request.session["upload-uuid"]
             except Upload.DoesNotExist:
                 del self.request.session["upload-uuid"]
@@ -119,11 +115,7 @@ class UploadView(LoginRequiredView):
         if "upload-uuid" in self.request.session:
             try:
                 u = Upload.objects.get(uuid=self.request.session["upload-uuid"])
-                # if the objet's got an upload error: delete
-                if u.state == Upload.STATE_UPLOAD_ERROR:
-                    u.delete()
-                else:
-                    data.append(self._add_status_response(u))
+                data.append(self._add_status_response(u))
             except Upload.DoesNotExist:
                 del self.request.session["upload-uuid"]
         return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")

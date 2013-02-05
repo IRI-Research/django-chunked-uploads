@@ -4,6 +4,7 @@ import hashlib
 import os
 import hmac
 import time
+import sys
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -65,14 +66,10 @@ class Upload(models.Model):
     
     STATE_UPLOADING = 1
     STATE_COMPLETE = 2
-    STATE_STITCHED = 3
-    STATE_UPLOAD_ERROR = 4
     
     STATE_CHOICES = [
         (STATE_UPLOADING, "Uploading"),
         (STATE_COMPLETE, "Complete - Chunks Uploaded"),
-        (STATE_STITCHED, "Complete - Stitched"),
-        (STATE_UPLOAD_ERROR, "Upload Error")
     ]
     
     user = models.ForeignKey(User, related_name="uploads")
@@ -90,16 +87,17 @@ class Upload(models.Model):
         )
     
     def stitch_chunks(self):
+        fname = os.path.join(
+            self.upload.storage.location,
+            storage_path(self, self.filename + ".tmp")
+        )
         try:
-            fname = os.path.join(
-                self.upload.storage.location,
-                storage_path(self, self.filename + ".tmp")
-            )
-            try:
-                os.makedirs(os.path.dirname(fname))
-            except OSError as e:
-                if e.errno != errno.EEXIST:
-                    raise
+            os.makedirs(os.path.dirname(fname))
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+        
+        try:
             fp = open(fname, "wb")
             m = hashlib.md5()
             for chunk in self.chunks.all().order_by("pk"):
@@ -108,6 +106,13 @@ class Upload(models.Model):
                 fp.write(bytes)
                 chunk.chunk.close()
             fp.close()
+        except Exception, e:
+            if os.path.exists(fname):
+                os.remove(fname)
+            self.delete()
+            raise           
+        
+        try:
             temp_file = open(fname, "rb")
             f = File(temp_file)
             self.upload.save(
@@ -119,13 +124,16 @@ class Upload(models.Model):
                 )
             )
             temp_file.close()
-            self.md5 = m.hexdigest()
-            self.state = Upload.STATE_STITCHED
-            self.save()
-            os.remove(fname)
-        except:
+        except Exception, e:
+            if os.path.exists(fname):
+                os.remove(fname)
             self.delete()
-            raise "error while stitching the chunks. All operations aborted and removed"
+            raise
+        
+        self.md5 = m.hexdigest()
+        self.state = Upload.STATE_COMPLETE
+        self.save()
+        os.remove(fname)
         
     def delete(self):
         #get upload path
