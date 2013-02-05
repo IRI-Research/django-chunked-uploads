@@ -26,11 +26,15 @@ $(function () {
 	    headers: authentication,
 	    add: function (e, data) {
 	    	$('#start_upload').attr('disabled', false);
-	    	
 	    	$('#start_upload').one('click', function (e) {
 	            e.preventDefault();
 	            chunked_uploads_endpoints.jqXHR = data.submit();
 	        });
+	    },
+	    start: function (e, data){
+	    	if (typeof chunked_uploads_start === "function") {
+	    		chunked_uploads_start(true);
+			}
 	    },
 	    done: function (e, data) {
 	    	chunked_uploads_endpoints.done_url = chunked_uploads_endpoints.done_url.replace('00000000-0000-0000-0000-000000000000', data.result[0].upload_uuid);
@@ -41,8 +45,20 @@ $(function () {
 	    		url: chunked_uploads_endpoints.done_url,
 	    		xhrFields: {withCredentials: true},
 	    		success: function(current_upload){
-	    			if (typeof chunked_uploads_video_url === "function") {
-	    				chunked_uploads_video_url(current_upload[0].video_url);
+	    			if (current_upload[0].state=="FAIL"){
+	    				if (typeof chunked_uploads_error === "function") {
+	    					chunked_uploads_error();
+		    			}
+	    			}
+	    			else{	
+	    				if (typeof chunked_uploads_video_url === "function") {
+		    				chunked_uploads_video_url(current_upload[0].video_url);
+		    			}
+	    			}
+	    		},
+	    		error: function(){
+	    			if (typeof chunked_uploads_error === "function") {
+    					chunked_uploads_error();
 	    			}
 	    		}
 			});
@@ -69,17 +85,20 @@ $(function () {
 	    fail: function(e, data) {
 	    	data_resume = data;
 	    	if (typeof chunked_uploads_error === "function") {
-    			chunked_uploads_error(true);
+    			chunked_uploads_error();
     		}
 	    }
     });
 	   
     $('#cancel_upload').click(function (e) {
-		if (!is_paused){
+    	if (!is_paused){
+    		//if cancel is clicked during the upload
 			is_canceled = true;
+			//stop the download
 			chunked_uploads_endpoints.jqXHR.abort();
 	    	$('#pause_upload').attr('disabled', true);
 			$('#resume_upload').attr('disabled', true);
+			//wait 1s before sending a DELETE request to the server
 			setTimeout(function() {
 				$.ajax({
 					  dataType: "json",
@@ -97,6 +116,7 @@ $(function () {
 			},1000);
 		}
 		else{
+			//if cancel is clicked while pause we send the DELETE request
 			$.ajax({
 				  dataType: "json",
 				  url: chunked_uploads_endpoints.upload_url,
@@ -136,6 +156,7 @@ $(function () {
 		$('#pause_upload').attr('disabled', false);
 	});
 	
+	//connection listener
 	if ('onLine' in navigator) {
         //event listener on connection found
 		window.addEventListener('online', function(){
