@@ -147,8 +147,8 @@ class ApiKeyAuthentication(Authentication):
         """
         from django.contrib.auth.models import User
 
-        username = request.GET.get('username') or request.POST.get('username') or request.META.get('HTTP_USERNAME')
-        api_key = request.GET.get('api_key') or request.POST.get('api_key') or request.META.get('HTTP_API_KEY')
+        username = request.REQUEST.get('username') or request.META.get('HTTP_USERNAME')
+        api_key = request.REQUEST.get('api_key') or request.META.get('HTTP_API_KEY')
         
         if not username or not api_key:
             return self._unauthorized()
