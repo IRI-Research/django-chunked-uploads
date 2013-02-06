@@ -8,6 +8,7 @@ $(function () {
 	$('#resume_upload').attr('disabled', true);
 	$('#cancel_upload').attr('disabled', true);
 	
+	//authentication send in the header, to log with ApiKey
 	var authentication = {
 			username: chunked_uploads_endpoints.username,
 			api_key: chunked_uploads_endpoints.api_key
@@ -25,6 +26,33 @@ $(function () {
 	    },
 	    headers: authentication,
 	    add: function (e, data) {
+	    	//Get json from server to know if and upload has already been started
+	    	$.ajax({
+	    		type: "GET",
+	    		dataType: "json",
+	    		headers: authentication,
+	    		url: chunked_uploads_endpoints.upload_url,
+	    		xhrFields: {withCredentials: true},
+	    		success: function(current_upload){
+	    			//If not null then an upload has already been started
+	    			if (current_upload != ""){
+	    				//checks if the file selected match with the file currently uploaded on the server 
+	    				if (data.files[0].size == current_upload[0].total_size){
+	    					//the file match, so we'll resume the upload from uploadedBytes
+	    					data.uploadedBytes = current_upload[0].size;
+	    				}
+	    				else{
+	    					//The file doesn't match, so delete the current upload on the server
+	    					$.ajax({
+			    	    		type: current_upload[0].delete_type,
+			    	    		url: current_upload[0].delete_url,
+			    	    		headers: authentication,
+			    		  });
+	    				}
+	    			}
+	    		},
+	    	});
+	    	
 	    	$('#start_upload').attr('disabled', false);
 	    	$('#start_upload').one('click', function (e) {
 	            e.preventDefault();
@@ -33,11 +61,17 @@ $(function () {
 	    },
 	    start: function (e, data){
 	    	if (typeof chunked_uploads_start === "function") {
-	    		chunked_uploads_start(true);
+	    		chunked_uploads_start();
 			}
 	    },
 	    done: function (e, data) {
+	        $('#start_upload').hide();
+    		$('#pause_upload').hide();
+    		$('#resume_upload').hide();
+    		$('#cancel_upload').hide();
+    		
 	    	chunked_uploads_endpoints.done_url = chunked_uploads_endpoints.done_url.replace('00000000-0000-0000-0000-000000000000', data.result[0].upload_uuid);
+	    	//send COMPLETE request
 	    	$.ajax({
 	    		type: "POST",
 	    		dataType: "json",
@@ -45,12 +79,17 @@ $(function () {
 	    		url: chunked_uploads_endpoints.done_url,
 	    		xhrFields: {withCredentials: true},
 	    		success: function(current_upload){
+	    			//error callback if upload state is FAIL
 	    			if (current_upload[0].state=="FAIL"){
 	    				if (typeof chunked_uploads_error === "function") {
 	    					chunked_uploads_error();
 		    			}
 	    			}
-	    			else{	
+	    			//complete and video_url callback if success
+	    			else{
+	    				if (typeof chunked_uploads_complete === "function") {
+	    					chunked_uploads_complete();
+		    			}
 	    				if (typeof chunked_uploads_video_url === "function") {
 		    				chunked_uploads_video_url(current_upload[0].video_url);
 		    			}
@@ -61,13 +100,7 @@ $(function () {
     					chunked_uploads_error();
 	    			}
 	    		}
-			});
-	    	
-	        $('#start_upload').hide();
-    		$('#pause_upload').hide();
-    		$('#resume_upload').hide();
-    		$('#cancel_upload').hide();
-    		
+			});    		
 	    },
 	    progressall: function (e, data) {
 	    	var progress = parseInt(data.loaded / data.total * 100, 10);
@@ -84,9 +117,6 @@ $(function () {
 	    },
 	    fail: function(e, data) {
 	    	data_resume = data;
-	    	if (typeof chunked_uploads_error === "function") {
-    			chunked_uploads_error();
-    		}
 	    }
     });
 	   
@@ -136,6 +166,9 @@ $(function () {
 	$('#pause_upload').click(function (e) {
 		is_paused = true;
 		chunked_uploads_endpoints.jqXHR.abort();
+		if (typeof chunked_uploads_stop === "function") {
+			chunked_uploads_stop();
+		}		
 		$('#pause_upload').attr('disabled', true);
 		$('#resume_upload').attr('disabled', false);
 	});
@@ -152,6 +185,9 @@ $(function () {
 				  chunked_uploads_endpoints.jqXHR = data_resume.submit();
 			  }
 		});
+		if (typeof chunked_uploads_start === "function") {
+    		chunked_uploads_start();
+		}
 		$('#resume_upload').attr('disabled', true);
 		$('#pause_upload').attr('disabled', false);
 	});
@@ -171,6 +207,9 @@ $(function () {
     				  chunked_uploads_endpoints.jqXHR = data_resume.submit();
     			  }
     		});
+    		if (typeof chunked_uploads_start === "function") {
+	    		chunked_uploads_start();
+			}
     		$('#resume_upload').attr('disabled', true);
     		$('#pause_upload').attr('disabled', false);
         });
