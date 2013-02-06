@@ -18,7 +18,7 @@ class Command(BaseCommand):
         else:
             #tests if the uncompleted upload is more than 3 days old, if it is : deletes            
             for upload in uncompleted_uploads:
-                if (datetime.datetime.now() - upload.created_at) > datetime.timedelta(seconds = old):
+                if (datetime.datetime.now() - upload.created_at) > datetime.timedelta(days = old):
                     upload.delete()
             
             print ("\nDone")
