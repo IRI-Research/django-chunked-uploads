@@ -10,7 +10,6 @@
 
 <script type="text/javascript" charset="utf-8">
 	chunked_uploads_endpoints = {
-			jqXHR : null,
 			upload_url: '{{WEB_URL}}{% url upload %}',
 			done_url: '{{WEB_URL}}{% url upload_done uuid='00000000-0000-0000-0000-000000000000' %}',
 			username: 'example',
@@ -32,7 +31,8 @@
 		};
 		
 		//callback of chunked upload error
-		chunked_upload_error = function(){
+		chunked_uploads_error = function(){
+			alert("The upload failed. Please reload the page, and try again.");
 		};
 		
 		//callback of chunked upload complete

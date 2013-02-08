@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         old = 3
        
-        print("\nYou have request to delete all failed and uncompleted uploads\nstarted " + str(old) + " ago or before.")
+        print("\nYou have request to delete all failed and uncompleted uploads\nstarted " + str(old) + " days ago or before.")
         
         uncompleted_uploads = Upload.objects.filter(state=1)
         

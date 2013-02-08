@@ -3,6 +3,7 @@ $(function () {
 	var is_canceled=false;
 	var is_paused=false;
 	var data_resume = null;
+	var chunked_uploads_jqXHR = null;
 	$('#start_upload').attr('disabled', true);
 	$('#pause_upload').attr('disabled', true);
 	$('#resume_upload').attr('disabled', true);
@@ -56,7 +57,7 @@ $(function () {
 	    	$('#start_upload').attr('disabled', false);
 	    	$('#start_upload').one('click', function (e) {
 	            e.preventDefault();
-	            chunked_uploads_endpoints.jqXHR = data.submit();
+	            chunked_uploads_jqXHR = data.submit();
 	        });
 	    },
 	    start: function (e, data){
@@ -117,7 +118,7 @@ $(function () {
 	    },
 	    fail: function(e, data) {
 	    	data_resume = data;
-	    }
+	    },
     });
 	   
     $('#cancel_upload').click(function (e) {
@@ -125,7 +126,7 @@ $(function () {
     		//if cancel is clicked during the upload
 			is_canceled = true;
 			//stop the download
-			chunked_uploads_endpoints.jqXHR.abort();
+			chunked_uploads_jqXHR.abort();
 	    	$('#pause_upload').attr('disabled', true);
 			$('#resume_upload').attr('disabled', true);
 			//wait 1s before sending a DELETE request to the server
@@ -165,7 +166,7 @@ $(function () {
 	
 	$('#pause_upload').click(function (e) {
 		is_paused = true;
-		chunked_uploads_endpoints.jqXHR.abort();
+		chunked_uploads_jqXHR.abort();
 		if (typeof chunked_uploads_stop === "function") {
 			chunked_uploads_stop();
 		}		
@@ -182,7 +183,7 @@ $(function () {
 			  xhrFields: {withCredentials: true},
 			  success: function(current_upload){
 				  data_resume.uploadedBytes = current_upload[0].size;
-				  chunked_uploads_endpoints.jqXHR = data_resume.submit();
+				  chunked_uploads_jqXHR = data_resume.submit();
 			  }
 		});
 		if (typeof chunked_uploads_start === "function") {
@@ -204,7 +205,7 @@ $(function () {
     			  xhrFields: {withCredentials: true},
     			  success: function(current_upload){
     				  data_resume.uploadedBytes = current_upload[0].size;
-    				  chunked_uploads_endpoints.jqXHR = data_resume.submit();
+    				  chunked_uploads_jqXHR = data_resume.submit();
     			  }
     		});
     		if (typeof chunked_uploads_start === "function") {
@@ -216,11 +217,11 @@ $(function () {
         
 		//event listener on connection lost
         window.addEventListener('offline', function(){
-        	if (chunked_uploads_endpoints.jqXHR != null){
+        	if (chunked_uploads_jqXHR != null){
 	    		is_paused = true;
 	    		$('#pause_upload').attr('disabled', true);
 	    		$('#resume_upload').attr('disabled', true);
-	    		chunked_uploads_endpoints.jqXHR.abort();
+	    		chunked_uploads_jqXHR.abort();
         	}
         });
     };
