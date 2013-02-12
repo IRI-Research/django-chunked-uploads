@@ -31,7 +31,7 @@ $(function () {
 	    	$.ajax({
 	    		type: "GET",
 	    		dataType: "json",
-	    		headers: authentication,
+	    		data: authentication,
 	    		url: chunked_uploads_endpoints.upload_url,
 	    		xhrFields: {withCredentials: true},
 	    		success: function(current_upload){
@@ -47,7 +47,7 @@ $(function () {
 	    					$.ajax({
 			    	    		type: current_upload[0].delete_type,
 			    	    		url: current_upload[0].delete_url,
-			    	    		headers: authentication,
+			    	    		data: authentication,
 			    		  });
 	    				}
 	    			}
@@ -134,13 +134,13 @@ $(function () {
 				$.ajax({
 					  dataType: "json",
 					  url: chunked_uploads_endpoints.upload_url,
-					  headers: authentication,
+					  data: authentication,
 					  xhrFields: {withCredentials: true},
 					  success: function(current_upload){
 						  $.ajax({
 			    	    		type: current_upload[0].delete_type,
 			    	    		url: current_upload[0].delete_url,
-			    	    		headers: authentication,
+			    	    		data: authentication,
 			    		  });
 					  }
 				});
@@ -152,7 +152,7 @@ $(function () {
 				  dataType: "json",
 				  url: chunked_uploads_endpoints.upload_url,
 				  xhrFields: {withCredentials: true},
-				  headers: authentication,
+				  data: authentication,
 				  success: function(current_upload){
 					  $.ajax({
 		    	    		type: current_upload[0].delete_type,
@@ -179,7 +179,7 @@ $(function () {
 		$.ajax({
 			  dataType: "json",
 			  url: chunked_uploads_endpoints.upload_url,
-			  headers: authentication,
+			  data: authentication,
 			  xhrFields: {withCredentials: true},
 			  success: function(current_upload){
 				  data_resume.uploadedBytes = current_upload[0].size;
@@ -201,7 +201,7 @@ $(function () {
     		$.ajax({
     			  dataType: "json",
     			  url: chunked_uploads_endpoints.upload_url,
-    			  headers: authentication,
+    			  data: authentication,
     			  xhrFields: {withCredentials: true},
     			  success: function(current_upload){
     				  data_resume.uploadedBytes = current_upload[0].size;

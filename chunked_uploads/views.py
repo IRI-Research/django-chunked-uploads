@@ -29,7 +29,7 @@ class LoginRequiredView(View):
         if auth.is_authenticated(request)==True:
             return super(LoginRequiredView, self).dispatch(request, *args, **kwargs)
         else:
-            return HttpResponse('Unauthorized', status=401)
+            return HttpResponse_cross_domain('Unauthorized', status=401)
 
 @login_required
 def upload_template(request):

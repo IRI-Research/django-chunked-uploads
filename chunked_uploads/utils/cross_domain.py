@@ -9,13 +9,13 @@ try:
     
 except AttributeError:
     CROSS_DOMAIN_ALLOWED_ORIGINS = "http://localhost"
-    CROSS_DOMAIN_ALLOWED_METHODS = 'POST, GET, OPTIONS, PUT, DELETE'
-    CROSS_DOMAIN_ALLOWED_HEADERS = "Content-Type, Content-Range, Content-Disposition, Content-Description"
+    CROSS_DOMAIN_ALLOWED_METHODS = 'POST, GET, OPTIONS, DELETE'
+    CROSS_DOMAIN_ALLOWED_HEADERS = "Content-Type, Content-Range, Content-Disposition, Content-Description, username, api_key"
     CROSS_DOMAIN_ALLOWED_CREDENTIALS = 'true'
 
-def allow_cross_domain_response(data, mimetype=None):
+def allow_cross_domain_response(data, mimetype=None, status=None):
     
-    response = HttpResponse(data, mimetype=mimetype)
+    response = HttpResponse(data, mimetype=mimetype, status=status)
     response['Access-Control-Allow-Origin']  = CROSS_DOMAIN_ALLOWED_ORIGINS
     response['Access-Control-Allow-Methods'] = CROSS_DOMAIN_ALLOWED_METHODS
     response['Access-Control-Allow-Headers'] = CROSS_DOMAIN_ALLOWED_HEADERS
