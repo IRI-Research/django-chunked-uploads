@@ -43,6 +43,9 @@ This is an app for your Django project to enable large uploads using the Blob AP
 			upload_url: 'upload url',
 			done_url: 'done url with uuid="00000000-0000-0000-0000-000000000000"',
 			//authentication (see below)
+            //default:
+            username: 'example',
+            api_key: 'secret_example'
         };
 
 * Available callbacks :
