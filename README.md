@@ -42,8 +42,7 @@ This is an app for your Django project to enable large uploads using the Blob AP
         chunked_uploads_endpoints = {
 			upload_url: 'upload url',
 			done_url: 'done url with uuid="00000000-0000-0000-0000-000000000000"',
-			username: 'example',
-			api_key: 'secret_example',
+			//authentication (see below)
         };
 
 * Available callbacks :
@@ -68,6 +67,37 @@ This is an app for your Django project to enable large uploads using the Blob AP
         chunked_uploads_video_url = function(video_url) {
         };
 
+
+## Authentication
+
+Inspired by tastypie, django_chunked_uploads provide authentications (basic auth, api_key auth, query auth)
+
+### Api_key auth
+
+You need to provide through the headers, or the data :
+* username
+* api_key
+
+The apikey can be set in the django admin view, in the api_key section.
+
+### Query auth
+
+You need to provide through the headers or the data :
+* api_key
+* timestamp
+* signature (created with your secret key and the timestamp)
+
+### TO DO
+
+Ideally chunked_upload doesn't have to authenticate the user. Chunked_upload gets the timstamp, the api_key, and the signature, and sends it to an external server. If the external server succeeds in authenticating the user, it send back few informations about him. Then chunked_upload create his own user with the informations provided by the external server.
+
+So in authentication.py, the function is_authenticate would be something like this:
+* get the api_key, the timestamp, and the signature from the request
+* check if the user corresponding to the api_key exists in chunked_upload database
+* if not : send the informations to an external serveur, to make him authenticate the user
+* if the external server authenticate the user, it send back user informations
+* chunked upload save these informations in a new user in its database
+* return true
 
 ## Credits
 
