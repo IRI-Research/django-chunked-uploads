@@ -33,11 +33,19 @@ class LoginRequiredView(View):
 
 @login_required
 def upload_template(request):
+    """
+    Basic function to render the demo.html page. It allows to make test, with all default values.
+    """
     return render_to_response ('demo.html', context_instance=RequestContext(request))
 
 
 @csrf_exempt
 def complete_upload(request, uuid):
+    """
+    Function to complete an upload and stitch the chunks
+    """
+    
+    #only a POST request can complete the upload 
     if request.method == "POST":
         data = []
         if "upload-uuid" in request.session:

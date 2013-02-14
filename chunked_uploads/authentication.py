@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse
+from django.contrib.auth.models import User
 
 try:
     from hashlib import sha1
@@ -55,7 +56,17 @@ class Authentication(object):
         This implementation returns a combination of IP address and hostname.
         """
         return "%s_%s" % (request.META.get('REMOTE_ADDR', 'noaddr'), request.META.get('REMOTE_HOST', 'nohost'))
-
+    
+    def get_user(self, **kwargs):
+        """
+        Provide a user by getting it from the base or by creating it with the information
+        retrieved from an external server
+        """
+        try:
+            user = User.objects.get(username=kwargs['username'])
+            return user
+        except (User.DoesNotExist, User.MultipleObjectsReturned):
+            return self._unauthorized()
 
 class BasicAuthentication(Authentication):
     """
@@ -145,18 +156,71 @@ class ApiKeyAuthentication(Authentication):
         Should return either ``True`` if allowed, ``False`` if not or an
         ``HttpResponse`` if you need something custom.
         """
-        from django.contrib.auth.models import User
 
         username = request.REQUEST.get('username') or request.META.get('HTTP_USERNAME')
         api_key = request.REQUEST.get('api_key') or request.META.get('HTTP_API_KEY')
         
         if not username or not api_key:
             return self._unauthorized()
+        
+       #TODO : request to retrieve information on user from an external server
+
+        user = self.get_user(username=username)
+
+        request.user = user
+        return self.get_key(user, api_key)
+
+    def get_key(self, user, api_key):
+        """
+        Attempts to find the API key for the user. Uses ``ApiKey`` by default
+        but can be overridden.
+        """
+        from chunked_uploads.models import ApiKey
 
         try:
-            user = User.objects.get(username=username)
-        except (User.DoesNotExist, User.MultipleObjectsReturned):
+            ApiKey.objects.get(user=user, key=api_key)
+        except ApiKey.DoesNotExist:
             return self._unauthorized()
+
+        return True
+
+    def get_identifier(self, request):
+        """
+        Provides a unique string identifier for the requestor.
+
+        This implementation returns the user's username.
+        """
+        return request.REQUEST.get('username', 'nouser')
+
+
+class QueryAuthentication(Authentication):
+    """
+    Handles Query auth, in which a user provides an API key, a timestamp, and a signature.
+    """
+    def _unauthorized(self):
+        return HttpUnauthorized()
+
+    def is_authenticated(self, request, **kwargs):
+        """
+        Finds the user and checks their API key.
+
+        Should return either ``True`` if allowed, ``False`` if not or an
+        ``HttpResponse`` if you need something custom.
+        """
+
+        timestamp = request.REQUEST.get('timestamp') or request.META.get('HTTP_TIMESTAMP')
+        api_key = request.REQUEST.get('api_key') or request.META.get('HTTP_API_KEY')
+        signature = request.REQUEST.get('signature') or request.META.get('HTTP_SIGNATURE')
+        
+        if not timestamp or not api_key or not signature:
+            return self._unauthorized()
+        
+        """
+        TODO : request to retrieve information on user from an external server it gave back the login, and the uuid
+        in the external server database.
+        """
+        
+        user = self.get_user(username=username, )
 
         request.user = user
         return self.get_key(user, api_key)
