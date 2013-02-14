@@ -127,8 +127,6 @@ $(function () {
 			is_canceled = true;
 			//stop the download
 			chunked_uploads_jqXHR.abort();
-	    	$('#pause_upload').attr('disabled', true);
-			$('#resume_upload').attr('disabled', true);
 			//wait 1s before sending a DELETE request to the server
 			setTimeout(function() {
 				$.ajax({
@@ -140,7 +138,7 @@ $(function () {
 						  $.ajax({
 			    	    		type: current_upload[0].delete_type,
 			    	    		url: current_upload[0].delete_url,
-			    	    		data: authentication,
+			    	    		headers: authentication,
 			    		  });
 					  }
 				});
@@ -161,6 +159,16 @@ $(function () {
 		    		  });
 				  }
 			});
+		}
+    	$('#pause_upload').attr('disabled', true);
+		$('#resume_upload').attr('disabled', true);
+		$('#cancel_upload').attr('disabled', true);
+		$('.progress').css(
+	            'width',
+	            0 + '%'
+	    );
+		if (typeof chunked_uploads_error === "function") {
+			chunked_uploads_error();
 		}
 	});
 	
@@ -225,5 +233,4 @@ $(function () {
         	}
         });
     };
-	
 });
