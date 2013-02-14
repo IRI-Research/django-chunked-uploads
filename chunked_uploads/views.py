@@ -18,19 +18,17 @@ from chunked_uploads.utils.path import sanitize_filename
 from chunked_uploads.utils.cross_domain import allow_cross_domain_response as HttpResponse_cross_domain
 from chunked_uploads.utils.build_auth_request import build_request
 from chunked_uploads.utils.decorators import oauth_required
-from chunked_uploads.authentication import ApiKeyAuthentication as Authentication
 from django.core.exceptions import PermissionDenied
 
 class LoginRequiredView(View):
     
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        auth= Authentication()
-        if auth.is_authenticated(request)==True:
-            return super(LoginRequiredView, self).dispatch(request, *args, **kwargs)
-        else:
-            return HttpResponse_cross_domain('Unauthorized', status=401)
-
+        """
+        you can add your custom authentication here
+        """
+        return super(LoginRequiredView, self).dispatch(request, *args, **kwargs)
+        
 @login_required
 def upload_template(request):
     """
