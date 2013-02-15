@@ -16,8 +16,6 @@ from chunked_uploads.models import Upload, Chunk
 from chunked_uploads.utils.url import absurl_norequest, get_web_url
 from chunked_uploads.utils.path import sanitize_filename
 from chunked_uploads.utils.cross_domain import allow_cross_domain_response as HttpResponse_cross_domain
-from chunked_uploads.utils.build_auth_request import build_request
-from chunked_uploads.utils.decorators import oauth_required
 from django.core.exceptions import PermissionDenied
 
 class LoginRequiredView(View):
