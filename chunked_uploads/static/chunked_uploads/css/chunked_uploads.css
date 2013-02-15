@@ -7,40 +7,62 @@
   filter: alpha(opacity=0);
 }
 
-.bar {
-background-color: #FFFFFF;
-	height: 12px;
-	padding: 3px;
-	width: 250px;		
-	border-radius: 45px;
-	box-shadow: 0 1px 5px #000 inset, 0 1px 0 #444;	         
-	}
-
-.bar span {
-	display: inline-block;
-	height: 100%;	
-	border-radius: 45px;
-    -webkit-transition: width .4s ease-in-out;  
+.bar{
+    
+    width:250px;
+    height:12px;
+    margin:5px auto auto 3px;
+    
+    background:#cfcfcf;
+    border-width:1px;
+    border-style:solid;
+    border-color: #aaa #bbb #fff #bbb;    
+    box-shadow:inset 0px 2px 3px #bbb;    
 }
 
-.grey span {
-	background-color: #838383;   
+.bar,
+.progress{
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    -o-border-radius:4px;
 }
 
-.stripes span {
-	-webkit-background-size: 30px 30px;
-	background-size: 30px 30px;			
-	background-image: -webkit-linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
-						transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
-						transparent 75%, transparent);     
-	
-	-webkit-animation: animate-stripes 3s linear infinite;     		
+.progress{
+    height:100%;
+    background:#999;
+    
+    background-size:18px 18px;
+    background-color: #ac0;   
+    background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%,
+                        transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%,
+                        transparent 75%, transparent);
+    background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%,
+                        transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%,
+                        transparent 75%, transparent);
+    background-image: -ms-linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%,
+                        transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%,
+                        transparent 75%, transparent);
+    background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%,
+                        transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%,
+                        transparent 75%, transparent);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25%,
+                        transparent 50%, rgba(255, 255, 255, .2) 50%, rgba(255, 255, 255, .2) 75%,
+                        transparent 75%, transparent);
+    
+    box-shadow:inset 0px 2px 8px rgba(255, 255, 255, .5), inset -1px -1px 0px rgba(0, 0, 0, .2);
 }
 
-@-webkit-keyframes animate-stripes { 
-	0% {background-position: 0 0;} 100% {background-position: 60px 0;}
+/*
+ * Transition - just for fun
+ */
+.bar:hover .progress{
+    width:100%;   
 }
-
-@-moz-keyframes animate-stripes {
-	0% {background-position: 0 0;} 100% {background-position: 60px 0;}
+.bar .progress,
+.bar:hover .progress{
+    -webkit-transition:width .5s ease-in;  
+    -moz-transition:width .5s ease-in; 
+    -o-transition:width .5s ease-in; 
+    transition:width .5s ease-in; 
 }
