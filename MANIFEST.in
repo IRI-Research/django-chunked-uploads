@@ -1,2 +1,3 @@
 include README.md
 recursive-include chunked_uploads/static *
+recursive-include chunked_uploads/templates *.html
