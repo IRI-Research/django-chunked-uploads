@@ -106,9 +106,9 @@ def find_package_data(
 PACKAGE = "chunked_uploads"
 NAME = "django-chunked-uploads"
 DESCRIPTION = "a django app for chunking uploads"
-AUTHOR = "Patrick Altman"
-AUTHOR_EMAIL = "paltman@eldarion.com"
-URL = "https://github.com/eldarion/django-chunked-uploads"
+AUTHOR = "Julien Rougeron"
+AUTHOR_EMAIL = "contac@iri.centrepompidou.fr"
+URL = "https://github.com/iri-research/django-chunked-uploads"
 VERSION = __import__(PACKAGE).__version__
 
 def launch_setup(script_name, script_args):

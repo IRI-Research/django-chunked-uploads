@@ -1,3 +1,5 @@
 /.project
 /.pydevproject
 *.pyc
+/dist
+/django_chunked_uploads.egg-info
