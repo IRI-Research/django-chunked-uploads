@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import url, patterns
 
 from chunked_uploads.views import UploadView, complete_upload, upload_template
 

@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand
-from django.conf import settings
 from chunked_uploads.models import Upload
+from django.core.management.base import BaseCommand
 import datetime
 
 class Command(BaseCommand):

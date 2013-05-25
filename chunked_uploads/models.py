@@ -1,26 +1,21 @@
-import datetime
-import errno
-import hashlib
-import os
-import hmac
-import time
-import sys
-
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.core.files.utils import FileProxyMixin
 from django.db import models
-
-from django.contrib.auth.models import User
-
 from django_extensions.db.fields import UUIDField
+import datetime
+import errno
+import hashlib
+import hmac
+import logging
+import os
+import time
 
 try:
     from hashlib import sha1
 except ImportError:
     import sha
     sha1 = sha.sha
-import logging
 
 
 STORAGE_CLASS = getattr(settings, "CHUNKED_UPLOADS_STORAGE_CLASS", None)
@@ -50,7 +45,7 @@ class File(FileProxyMixin):
     This is needed as there was a bug pre-1.4 django with getting
     size off of a file object
     """
-    def __init__(self, file):
+    def __init__(self, file):  # @ReservedAssignment
         self.file = file
     
     @property
@@ -72,7 +67,7 @@ class Upload(models.Model):
         (STATE_COMPLETE, "Complete - Chunks Uploaded"),
     ]
     
-    user = models.ForeignKey(User, related_name="uploads")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="uploads")
     uuid = UUIDField(auto=True, unique=True)
     filename = models.CharField(max_length=250)
     filesize = models.IntegerField()
@@ -101,7 +96,7 @@ class Upload(models.Model):
             fp = open(fname, "wb")
             m = hashlib.md5()
             for chunk in self.chunks.all().order_by("pk"):
-                bytes = chunk.chunk.read()
+                bytes = chunk.chunk.read()  # @ReservedAssignment
                 m.update(bytes)
                 fp.write(bytes)
                 chunk.chunk.close()
@@ -206,7 +201,7 @@ if 'django.contrib.auth' in settings.INSTALLED_APPS:
     import uuid
     
     class ApiKey(models.Model):
-        user = models.OneToOneField(User, related_name='chunked_upload_api_key')
+        user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='chunked_upload_api_key')
         key = models.CharField(max_length=256, blank=True, default='')
         created = models.DateTimeField(default=datetime.datetime.now)
         

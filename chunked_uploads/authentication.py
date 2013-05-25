@@ -1,14 +1,10 @@
 import base64
-import hmac
-import time
-import uuid
 
-from django.conf import settings
 from django.contrib.auth import authenticate
-from django.core.exceptions import ImproperlyConfigured
-from django.utils.translation import ugettext as _
 from django.http import HttpResponse
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 try:
     from hashlib import sha1
@@ -163,7 +159,7 @@ class ApiKeyAuthentication(Authentication):
         if not username or not api_key:
             return self._unauthorized()
         
-       #TODO : request to retrieve information on user from an external server
+        #TODO : request to retrieve information on user from an external server
 
         user = self.get_user(username=username)
 
@@ -220,7 +216,7 @@ class QueryAuthentication(Authentication):
         in the external server database.
         """
         
-        user = self.get_user(username=username, )
+        user = None#self.get_user(username=username, )
 
         request.user = user
         return self.get_key(user, api_key)

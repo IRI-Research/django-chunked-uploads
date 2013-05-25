@@ -1,10 +1,8 @@
+from chunked_uploads.utils.web_url_management import get_web_url
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.urlresolvers import reverse
-from chunked_uploads.utils.web_url_management import get_web_url
-
-import httplib2
-import re
 import urlparse
+
 
 def absstatic(request, path):
     domain=get_web_url(request)

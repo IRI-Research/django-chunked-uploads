@@ -1,22 +1,18 @@
-import json
-import urllib2
-
+from chunked_uploads.models import Upload, Chunk
+from chunked_uploads.utils.cross_domain import (
+    allow_cross_domain_response as HttpResponse_cross_domain)
+from chunked_uploads.utils.path import sanitize_filename
+from chunked_uploads.utils.url import absurl_norequest, get_web_url
+from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
-from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
+from django.template import RequestContext
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
-from django.template import RequestContext
-from django.http import HttpResponse
+import json
 
-from django.contrib.auth.decorators import login_required
 
-from chunked_uploads.models import Upload, Chunk
-from chunked_uploads.utils.url import absurl_norequest, get_web_url
-from chunked_uploads.utils.path import sanitize_filename
-from chunked_uploads.utils.cross_domain import allow_cross_domain_response as HttpResponse_cross_domain
-from django.core.exceptions import PermissionDenied
 
 class LoginRequiredView(View):
     
@@ -49,9 +45,9 @@ def complete_upload(request, uuid):
         
         up = get_object_or_404(Upload, uuid=uuid)
         if up.filesize == up.uploaded_size():
-           up.stitch_chunks()
-           up.remove_related_chunks()
-           data.append({
+            up.stitch_chunks()
+            up.remove_related_chunks()
+            data.append({
                         "video_url": get_web_url() + up.upload.url, 
                         "state": "COMPLETE"
                         })

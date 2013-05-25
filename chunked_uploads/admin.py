@@ -8,7 +8,6 @@ admin.site.register(Chunk)
 admin.site.register(ApiKey)
 
 if 'django.contrib.auth' in settings.INSTALLED_APPS:
-    from chunked_uploads.models import ApiKey
     
     class ApiKeyInline(admin.StackedInline):
         model = ApiKey
