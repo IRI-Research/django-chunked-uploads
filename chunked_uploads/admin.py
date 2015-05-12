@@ -8,7 +8,7 @@ admin.site.register(Chunk)
 admin.site.register(ApiKey)
 
 if 'django.contrib.auth' in settings.INSTALLED_APPS:
-    
+
     class ApiKeyInline(admin.StackedInline):
         model = ApiKey
         extra = 0
