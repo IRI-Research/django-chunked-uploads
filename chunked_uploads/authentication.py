@@ -26,9 +26,11 @@ try:
     import oauth_provider
 except ImportError:
     oauth_provider = None
-    
+
+
 class HttpUnauthorized(HttpResponse):
     status_code = 401
+
 
 class Authentication(object):
     """
@@ -52,7 +54,7 @@ class Authentication(object):
         This implementation returns a combination of IP address and hostname.
         """
         return "%s_%s" % (request.META.get('REMOTE_ADDR', 'noaddr'), request.META.get('REMOTE_HOST', 'nohost'))
-    
+
     def get_user(self, **kwargs):
         """
         Provide a user by getting it from the base or by creating it with the information
@@ -63,6 +65,7 @@ class Authentication(object):
             return user
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             return self._unauthorized()
+
 
 class BasicAuthentication(Authentication):
     """
@@ -155,10 +158,10 @@ class ApiKeyAuthentication(Authentication):
 
         username = request.REQUEST.get('username') or request.META.get('HTTP_USERNAME')
         api_key = request.REQUEST.get('api_key') or request.META.get('HTTP_API_KEY')
-        
+
         if not username or not api_key:
             return self._unauthorized()
-        
+
         #TODO : request to retrieve information on user from an external server
 
         user = self.get_user(username=username)
@@ -207,16 +210,16 @@ class QueryAuthentication(Authentication):
         timestamp = request.REQUEST.get('timestamp') or request.META.get('HTTP_TIMESTAMP')
         api_key = request.REQUEST.get('api_key') or request.META.get('HTTP_API_KEY')
         signature = request.REQUEST.get('signature') or request.META.get('HTTP_SIGNATURE')
-        
+
         if not timestamp or not api_key or not signature:
             return self._unauthorized()
-        
+
         """
         TODO : request to retrieve information on user from an external server it gave back the login, and the uuid
         in the external server database.
         """
-        
-        user = None#self.get_user(username=username, )
+
+        user = None  # self.get_user(username=username, )
 
         request.user = user
         return self.get_key(user, api_key)

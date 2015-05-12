@@ -13,7 +13,6 @@ from django.views.generic.base import View
 import json
 
 
-
 class LoginRequiredView(View):
 
     @method_decorator(csrf_exempt)
@@ -23,12 +22,13 @@ class LoginRequiredView(View):
         """
         return super(LoginRequiredView, self).dispatch(request, *args, **kwargs)
 
+
 @login_required
 def upload_template(request):
     """
     Basic function to render the demo.html page. It allows to make test, with all default values.
     """
-    return render_to_response ('demo.html', context_instance=RequestContext(request))
+    return render_to_response('demo.html', context_instance=RequestContext(request))
 
 
 @csrf_exempt
@@ -82,7 +82,7 @@ class UploadView(LoginRequiredView):
         if "upload-uuid" in self.request.session:
             try:
                 u = Upload.objects.get(uuid=self.request.session["upload-uuid"])
-                if u.state==Upload.STATE_COMPLETE:
+                if u.state == Upload.STATE_COMPLETE:
                     del self.request.session["upload-uuid"]
             except Upload.DoesNotExist:
                 del self.request.session["upload-uuid"]
@@ -91,7 +91,7 @@ class UploadView(LoginRequiredView):
             content_disposition = self.request.META["HTTP_CONTENT_DISPOSITION"]
             try:
                 content_range = self.request.META["HTTP_CONTENT_RANGE"]
-                content_range  = content_range.split("/")[1]
+                content_range = content_range.split("/")[1]
             except:
                 content_range = self.request.META["CONTENT_LENGTH"]
             u = Upload.objects.create(
@@ -112,7 +112,7 @@ class UploadView(LoginRequiredView):
         return data
 
     def get(self, request, *args, **kwargs):
-        data=[]
+        data = []
         if "upload-uuid" in self.request.session:
             try:
                 u = Upload.objects.get(uuid=self.request.session["upload-uuid"])

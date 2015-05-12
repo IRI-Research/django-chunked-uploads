@@ -6,7 +6,6 @@ import os
 import sys
 
 
-
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()
 
@@ -109,10 +108,11 @@ AUTHOR_EMAIL = "contac@iri.centrepompidou.fr"
 URL = "https://github.com/iri-research/django-chunked-uploads"
 VERSION = __import__(PACKAGE).__version__
 
+
 def launch_setup(script_name, script_args):
     setup(
-        script_name = script_name,
-        script_args = script_args,
+        script_name=script_name,
+        script_args=script_args,
         name=NAME,
         version=VERSION,
         description=DESCRIPTION,

@@ -24,14 +24,17 @@ if STORAGE_CLASS:
 else:
     storage = None
 
+
 def get_storage_path(obj, fname):
     return os.path.join("chunked_uploads", obj.uuid, fname)
+
 
 STORAGE_PATH = getattr(settings, "CHUNKED_UPLOADS_STORAGE_PATH", None)
 if STORAGE_PATH:
     storage_path = STORAGE_PATH
 else:
     storage_path = get_storage_path
+
 
 def get_chunks_storage_path(obj, fname):
     return os.path.join("chunked_uploads", obj.upload.uuid, "chunks", "chunk")
@@ -224,7 +227,6 @@ if 'django.contrib.auth' in settings.INSTALLED_APPS:
             new_uuid = uuid.uuid4()
             # Hmac that beast.
             return hmac.new(str(new_uuid), digestmod=sha1).hexdigest()
-
 
     def create_api_key(**kwargs):
         """
