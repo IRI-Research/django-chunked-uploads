@@ -24,19 +24,23 @@ if STORAGE_CLASS:
 else:
     storage = None
 
+def get_storage_path(obj, fname):
+    return os.path.join("chunked_uploads", obj.uuid, fname)
 
 STORAGE_PATH = getattr(settings, "CHUNKED_UPLOADS_STORAGE_PATH", None)
 if STORAGE_PATH:
     storage_path = STORAGE_PATH
 else:
-    storage_path = lambda obj, fname: os.path.join("chunked_uploads", obj.uuid, fname)
+    storage_path = get_storage_path
 
+def get_chunks_storage_path(obj, fname):
+    return os.path.join("chunked_uploads", obj.upload.uuid, "chunks", "chunk")
 
 CHUNKS_STORAGE_PATH = getattr(settings, "CHUNKED_UPLOADS_CHUNKS_STORAGE_PATH", None)
 if CHUNKS_STORAGE_PATH:
     chunks_storage_path = CHUNKS_STORAGE_PATH
 else:
-    chunks_storage_path = lambda obj, fname: os.path.join("chunked_uploads", obj.upload.uuid, "chunks", "chunk")
+    chunks_storage_path = get_chunks_storage_path
 
 
 
