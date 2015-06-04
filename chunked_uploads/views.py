@@ -58,9 +58,9 @@ def complete_upload(request, uuid):
                         "state": "FAIL"
                         })
 
-        return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
+        return HttpResponse_cross_domain(json.dumps(data), content_type="application/json")
     else:
-        return HttpResponse_cross_domain({}, mimetype="application/json")
+        return HttpResponse_cross_domain({}, content_type="application/json")
 
 
 class UploadView(LoginRequiredView):
@@ -77,7 +77,7 @@ class UploadView(LoginRequiredView):
         }
 
     def handle_chunk(self):
-        f = ContentFile(self.request.raw_post_data)
+        f = ContentFile(self.request.body)
 
         if "upload-uuid" in self.request.session:
             try:
@@ -119,14 +119,14 @@ class UploadView(LoginRequiredView):
                 data.append(self._add_status_response(u))
             except Upload.DoesNotExist:
                 del self.request.session["upload-uuid"]
-        return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
+        return HttpResponse_cross_domain(json.dumps(data), content_type="application/json")
 
     def post(self, request, *args, **kwargs):
         data = self.handle_chunk()
-        return HttpResponse_cross_domain(json.dumps(data), mimetype="application/json")
+        return HttpResponse_cross_domain(json.dumps(data), content_type="application/json")
 
     def options(self, request, *args, **kwargs):
-        return HttpResponse_cross_domain({}, mimetype="application/json")
+        return HttpResponse_cross_domain({}, content_type="application/json")
 
     def delete(self, request, *args, **kwargs):
         upload = get_object_or_404(Upload, pk=kwargs.get("pk"))
@@ -135,4 +135,4 @@ class UploadView(LoginRequiredView):
         if "upload-uuid" in self.request.session:
             del request.session["upload-uuid"]
 
-        return HttpResponse_cross_domain({}, mimetype="application/json")
+        return HttpResponse_cross_domain({}, content_type="application/json")

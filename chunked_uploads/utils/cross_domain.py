@@ -14,9 +14,9 @@ except AttributeError:
     CROSS_DOMAIN_ALLOWED_CREDENTIALS = 'true'
 
 
-def allow_cross_domain_response(data, mimetype=None, status=None):
+def allow_cross_domain_response(data, content_type=None, status=None):
 
-    response = HttpResponse(data, mimetype=mimetype, status=status)
+    response = HttpResponse(data, content_type=content_type, status=status)
     response['Access-Control-Allow-Origin'] = CROSS_DOMAIN_ALLOWED_ORIGINS
     response['Access-Control-Allow-Methods'] = CROSS_DOMAIN_ALLOWED_METHODS
     response['Access-Control-Allow-Headers'] = CROSS_DOMAIN_ALLOWED_HEADERS
